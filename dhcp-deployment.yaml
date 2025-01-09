@@ -21,6 +21,10 @@ data:
     # Registro de logs
     log-queries
     log-dhcp
+    # Escuchar en todas las interfaces
+    interface=*
+    # Cambiar puerto DNS
+    port=5353
 
 ---
 
@@ -39,6 +43,8 @@ spec:
       labels:
         app: dhcp-server
     spec:
+      hostNetwork: true # Expone el contenedor en todas las interfaces del nodo
+      dnsPolicy: ClusterFirstWithHostNet # Necesario para DNS cuando se usa hostNetwork
       containers:
       - name: dnsmasq
         image: jpillora/dnsmasq
@@ -60,21 +66,5 @@ spec:
       - name: dnsmasq-config
         configMap:
           name: dnsmasq-config
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: dhcp-server
-  namespace: dhcp-server
-spec:
-  ports:
-  - protocol: UDP
-    port: 67
-    targetPort: 67
-  selector:
-    app: dhcp-server
-  type: ClusterIP
 
 
